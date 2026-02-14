@@ -1,0 +1,27 @@
+# .NET ignore
+**/receptionHubBackend/bin/
+**/receptionHubBackend/obj/
+**/receptionHubBackend/appsettings.Development.json
+**/receptionHubBackend/*.user
+**/receptionHubBackend/*.suo
+**/receptionHubBackend/.vs/
+
+# Angular ignore
+**/receptionHubFrontend/node_modules/
+**/receptionHubFrontend/dist/
+**/receptionHubFrontend/tmp/
+**/receptionHubFrontend/out-tsc/
+**/receptionHubFronte/.angular/
+
+# VS Code
+.vscode/
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+Thumbs.db
+ehthumbs.db
+*.log
