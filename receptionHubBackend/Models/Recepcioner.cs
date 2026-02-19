@@ -46,4 +46,6 @@ public class Recepcioner
 
     public string? Napomena { get; set; }
 
+    public ICollection<Rezervacija>? Rezervacije { get; set; }
+
 }
