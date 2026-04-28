@@ -63,6 +63,7 @@ namespace receptionHubBackend.Services
                 Tip = "Bearer",
                 Ime = recepcioner.Ime,
                 Prezime = recepcioner.Prezime,
+                KorisnickoIme = recepcioner.KorisnickoIme,
                 Pozicija = recepcioner.Pozicija
             };
         }

@@ -12,6 +12,7 @@ public class AutentifikacijaController : ControllerBase
 {
     private readonly IAuthenticationService _authService;
     private readonly ILogService _logService;
+
     public AutentifikacijaController(IAuthenticationService authService, ILogService logService)
     {
         _authService = authService;
@@ -25,29 +26,46 @@ public class AutentifikacijaController : ControllerBase
         {
             if (loginDto == null || !ModelState.IsValid)
             {
-                await _logService.LogUpozorenjeAsync($"Neuspješna validacija login forme za korisnika: {loginDto?.KorisnickoIme ?? "nepoznato"}", "AutentifikacijaController");
+                await _logService.LogUpozorenjeAsync(
+                    $"Neuspješna validacija login forme za korisnika: {loginDto?.KorisnickoIme ?? "nepoznato"}",
+                    "AutentifikacijaController"
+                );
                 return BadRequest(new { poruka = "Popunite tražena polja" });
             }
 
-            await _logService.LogInfoAsync($"Pokušaj logina za korisničko ime: {loginDto?.KorisnickoIme}", "AutentifikacijaController");
+            await _logService.LogInfoAsync(
+                $"Pokušaj logina za korisničko ime: {loginDto?.KorisnickoIme}",
+                "AutentifikacijaController"
+            );
             var token = await _authService.AutentifikujAsync(loginDto!);
 
             if (token == null)
             {
-                await _logService.LogUpozorenjeAsync($"Neuspješan login - pogrešni kredencijali za: {loginDto?.KorisnickoIme}", "AutentifikacijaController");
+                await _logService.LogUpozorenjeAsync(
+                    $"Neuspješan login - pogrešni kredencijali za: {loginDto?.KorisnickoIme}",
+                    "AutentifikacijaController"
+                );
                 return Unauthorized(new { poruka = "Pogrešno korisničko ime ili lozinka" });
             }
 
-            await _logService.LogAkcijuAsync($"Uspješan login: {token.Ime} {token.Prezime}",
-                int.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? "0"),
+            await _logService.LogAkcijuAsync(
+                $"Uspješan login: {token.Ime} {token.Prezime}",
+                null,
                 null
             );
             return Ok(token);
         }
         catch (Exception ex)
         {
-            await _logService.LogGreskuAsync("Greška prilikom logina", ex, "AutentifikacijaController");
-            return StatusCode(500, new { poruka = "Došlo je do greške na serveru", detalji = ex.Message });
+            await _logService.LogGreskuAsync(
+                "Greška prilikom logina",
+                ex,
+                "AutentifikacijaController"
+            );
+            return StatusCode(
+                500,
+                new { poruka = "Došlo je do greške na serveru", detalji = ex.Message }
+            );
         }
     }
 
@@ -59,7 +77,11 @@ public class AutentifikacijaController : ControllerBase
         {
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
-            await _logService.LogAkcijuAsync($"Korisnik se odjavio", int.TryParse(userId, out int id) ? id : 0, null);
+            await _logService.LogAkcijuAsync(
+                $"Korisnik se odjavio",
+                int.TryParse(userId, out int id) ? id : 0,
+                null
+            );
 
             return Ok(new { poruka = "Uspješno odjavljeni" });
         }
