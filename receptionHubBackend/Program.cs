@@ -23,9 +23,9 @@ public class Program
             options.UseNpgsql(connectionString));
 
         // JWT
-        var jwtKey = builder.Configuration["Jwt:Key"] ?? 
+        var jwtKey = builder.Configuration["Jwt:Key"] ??
             throw new InvalidOperationException("JWT Key nije konfigurisan! Koristi user-secrets.");
-        
+
         builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             .AddJwtBearer(options =>
             {
@@ -44,13 +44,11 @@ public class Program
         // CORS
         builder.Services.AddCors(options =>
         {
-            options.AddPolicy("AngularFrontend", policy =>
+            options.AddPolicy("ReactFrontend", policy =>
             {
                 policy.WithOrigins(
-                        "http://localhost:4200",           // Angular development
-                        "https://localhost:4200",          // HTTPS verzija
-                        "https://receptionhub-frontend.vercel.app", // Produkcija
-                        "https://receptionhub-frontend.netlify.app"  // Produkcija
+                        "http://localhost:5173"          // HTTPS verzija
+                                                         //"https://receptionhub-frontend.netlify.app"  // Produkcija
                     )
                     .AllowAnyHeader()
                     .AllowAnyMethod()
@@ -102,7 +100,7 @@ public class Program
         app.UseHttpsRedirection();
 
         // CORS - mora biti prije Auth
-        app.UseCors("AngularFrontend");
+        app.UseCors("ReactFrontend");
 
         // Rate limiting
         app.UseRateLimiter();
@@ -112,43 +110,6 @@ public class Program
 
         app.MapControllers();
 
-        // ========== 13. INICIJALIZACIJA BAZE (seed podaci) ==========
-        using (var scope = app.Services.CreateScope())
-        {
-            var context = scope.ServiceProvider.GetRequiredService<ReceptionHubDbContext>();
-            var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
-            
-            try
-            {
-                // Primijeni migracije
-                context.Database.Migrate();
-                
-                // Dodaj seed podatke ako je baza prazna
-                if (!context.Recepcioneri.Any())
-                {
-                    var passwordHasher = scope.ServiceProvider.GetRequiredService<IPasswordHasher<Recepcioner>>();
-                    
-                    context.Recepcioneri.Add(new Recepcioner
-                    {
-                        Ime = "Admin",
-                        Prezime = "Admin",
-                        KorisnickoIme = "admin",
-                        Email = "admin@hotel.com",
-                        LozinkaHash = passwordHasher.HashPassword(new Recepcioner(), "admin123"),
-                        Pozicija = TipPozicije.Admin,
-                        Aktivan = true,
-                        DatumKreiranjaRacuna = DateTime.UtcNow
-                    });
-                    
-                    context.SaveChanges();
-                    logger.LogInformation("Dodan admin korisnik");
-                }
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, "Greška pri inicijalizaciji baze");
-            }
-        }
 
         app.Run();
     }
